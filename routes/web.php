@@ -13,6 +13,34 @@
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+$router->group(['prefix' => 'api'], function () use ($router) {
+    $router->post('/user/register', function () use ($router) {
+        return 'register';
+    });
+
+    $router->post('/user/sign-in', ['uses' => 'UserController@login']);
+
+    $router->post('/user/recover-password', []
+//    method POST/PATCH
+//    fields: email [string] // allow to update the password via email token
+    );
+
+    $router->group(['middleware' => 'auth:api'], function () use ($router) {
+        $router->get('/user/companies/', ['uses' => 'CompanyController@showAllCompanies']);
+
+        $router->post('/user/companies', ['uses' => 'CompanyController@create']
+    //    fields: title [string], phone [string], description [string]
+    //    add the companies, associated with the user (by the relation)
+        );
+    });
 });
+
+
+
+
+
+
+

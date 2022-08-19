@@ -14,6 +14,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call('UsersTableSeeder');
+        try {
+            $this->call(UsersSeeder::class);
+        } catch (\Throwable $exception) {
+            die(json_encode(['message' => $this->getStr($exception)]));
+        }
+
+    }
+
+    /**
+     * @param \Throwable|\Exception $exception
+     *
+     * @return string
+     */
+    public function getStr(\Throwable|\Exception $exception): string
+    {
+        return $exception->getMessage() . ' ' .
+            $exception->getFile() . ' ' .
+            $exception->getline();
     }
 }
