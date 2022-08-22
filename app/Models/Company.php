@@ -16,7 +16,7 @@ class Company extends Model
      * @var string[]
      */
     protected $fillable = [
-        'title', 'phone', 'description',
+        'title', 'phone', 'description', 'user_id',
     ];
 
     /**
@@ -25,7 +25,7 @@ class Company extends Model
      * @var string[]
      */
     protected $hidden = [
-        '',
+        'user_id',
     ];
 
     /**

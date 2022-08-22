@@ -2,22 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CompanyCreateRequest;
 use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Lumen\Http\Request;
 
 class CompanyController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     /**
      * @return \Illuminate\Http\JsonResponse
      */
@@ -25,17 +15,22 @@ class CompanyController extends Controller
     {
         $companies = Company::all()->where('user_id', '=', Auth::id());
 
-        return response()->json($companies, 201);
+        return response()->json($companies, 200);
     }
 
     /**
-     * @param Request $request
+     * @param CompanyCreateRequest $request
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request)
+    public function create(CompanyCreateRequest $request)
     {
-        $company = Company::create($request->all());
+        $companyData = [
+            ...$request->params,
+            'user_id' => Auth::id()
+        ];
+
+        $company = Company::create($companyData);
 
         return response()->json($company, 201);
     }

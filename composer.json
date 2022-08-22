@@ -6,6 +6,8 @@
     "type": "project",
     "require": {
         "php": "^8.0",
+        "illuminate/notifications": "^9.25",
+        "illuminate/validation": "^9.25",
         "laravel/lumen-framework": "^9.0",
         "laravel/ui": "^4.0"
     },

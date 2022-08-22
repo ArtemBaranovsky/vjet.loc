@@ -13,27 +13,26 @@
 |
 */
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+$router->get('/user/reset-password', [
+    'as' => 'password.reset',
+    'uses' => 'Auth\ResetPasswordController@reset'
+]);
 
 $router->group(['prefix' => 'api'], function () use ($router) {
-    $router->post('/user/register', function () use ($router) {
-        return 'register';
-    });
+    $router->post('/user/register', 'Auth\RegisterController@register');
 
-    $router->post('/user/sign-in', ['uses' => 'UserController@login']);
+    $router->post('/user/sign-in', 'Auth\LoginController@login');
 
-    $router->post('/user/recover-password', []
-//    method POST/PATCH
-//    fields: email [string] // allow to update the password via email token
+    $router->post('/user/recover-password', [
+        'as' => 'password.update',
+        'uses' => 'Auth\RequestPasswordController@sendResetLink'
+        ]
     );
 
     $router->group(['middleware' => 'auth:api'], function () use ($router) {
-        $router->get('/user/companies/', ['uses' => 'CompanyController@showAllCompanies']);
+        $router->get('/user/companies/', 'CompanyController@showAllCompanies');
 
-        $router->post('/user/companies', ['uses' => 'CompanyController@create']
-    //    fields: title [string], phone [string], description [string]
-    //    add the companies, associated with the user (by the relation)
+        $router->post('/user/companies', 'CompanyController@create'
         );
     });
 });

@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Session\Middleware\AuthenticateSession;
+
 require_once __DIR__.'/../vendor/autoload.php';
 
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
@@ -23,10 +25,12 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
- $app->withFacades();
+$app->withFacades();
 
- $app->withEloquent();
+$app->withEloquent();
 
+$app->alias('mail.manager', Illuminate\Mail\MailManager::class);
+$app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 /*
 |--------------------------------------------------------------------------
 | Register Container Bindings
@@ -48,6 +52,19 @@ $app->singleton(
     App\Console\Kernel::class
 );
 
+$app->singleton(Illuminate\Session\SessionManager::class, function () use ($app) {
+    return $app->loadComponent('session', Illuminate\Session\SessionServiceProvider::class, 'session');
+});
+
+$app->singleton('session.store', function () use ($app) {
+    return $app->loadComponent('session', Illuminate\Session\SessionServiceProvider::class, 'session.store');
+});
+
+$app->singleton('cookie', function () use ($app) {
+    return $app->loadComponent('session', 'App\Providers\CookieServiceProvider', 'cookie');
+});
+
+$app->bind('Illuminate\Contracts\Cookie\QueueingFactory', 'cookie');
 /*
 |--------------------------------------------------------------------------
 | Register Config Files
@@ -76,14 +93,19 @@ collect(scandir(__DIR__ . '/../config'))->each(function ($item) use ($app) {
 |
 */
 
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
+ $app->middleware([
+     \App\Http\Middleware\EncryptCookies::class,
+     \App\Http\Middleware\AddQueuedCookiesToResponse::class,
+     \App\Http\Middleware\StartSession::class,
+     \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+     \App\Http\Middleware\VerifyCsrfToken::class,
+ ]);
 
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
  ]);
 
+ $app->middleware([]);
 /*
 |--------------------------------------------------------------------------
 | Register Service Providers
@@ -98,7 +120,10 @@ collect(scandir(__DIR__ . '/../config'))->each(function ($item) use ($app) {
  $app->register(App\Providers\AppServiceProvider::class);
  $app->register(App\Providers\AuthServiceProvider::class);
  $app->register(App\Providers\EventServiceProvider::class);
-
+ $app->register(Illuminate\Mail\MailServiceProvider::class);
+ $app->register(Illuminate\Auth\Passwords\PasswordResetServiceProvider::class);
+ $app->register(Illuminate\Notifications\NotificationServiceProvider::class);
+ $app->register(Illuminate\Session\SessionServiceProvider::class);
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes
